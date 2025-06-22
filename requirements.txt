@@ -2,8 +2,15 @@ Crawl4AI
 langchain
 langchain-community
 langchain-openai
+langchain-pinecone
+langchain-text-splitters
+langchain-groq
 requests
 playwright
+pinecone
+python-dotenv
+tiktoken
+openai
 
 aiohttp
 aiofiles

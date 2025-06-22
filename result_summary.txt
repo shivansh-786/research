@@ -1,0 +1,22 @@
+PINECONE-COMPATIBLE CHUNKING RESULTS
+==================================================
+
+Total chunks ready for embedding: 795
+Average chunk length: 727 characters
+
+Categories:
+  attack: 37 chunks
+  compliance: 89 chunks
+  cyber-risk: 353 chunks
+  integration: 166 chunks
+  vendor: 150 chunks
+
+Chunk types:
+  markdown_header_split: 360 chunks
+  recursive_split: 435 chunks
+
+Data structure:
+- Each vector has unique ID, text content, and metadata
+- Compatible with Pinecone vector database
+- Ready for embedding with OpenAI or other models
+- Use result.txt for programmatic access

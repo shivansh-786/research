@@ -1,0 +1,9 @@
+Crawl4AI
+langchain
+langchain-community
+langchain-openai
+requests
+playwright
+
+aiohttp
+aiofiles

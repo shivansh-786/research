@@ -1,5 +1,6 @@
 import os
 import uvicorn
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -12,13 +13,46 @@ from research_agent import ZeronEnhancedRAG
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize FastAPI app
+# Global research agent instance
+research_agent: Optional[ZeronEnhancedRAG] = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application lifespan"""
+    # Startup
+    global research_agent
+    try:
+        logger.info("🚀 Initializing Zeron Enhanced Research Agent...")
+        
+        # Validate environment variables
+        required_vars = ["PINECONE_API_KEY", "OPENAI_API_KEY", "GROQ_API_KEY", "ANTHROPIC_API_KEY"]
+        missing_vars = [var for var in required_vars if not os.getenv(var)]
+        
+        if missing_vars:
+            logger.error(f"❌ Missing required environment variables: {missing_vars}")
+            raise Exception(f"Missing environment variables: {missing_vars}")
+        
+        research_agent = ZeronEnhancedRAG()
+        logger.info("✅ Research Agent initialized successfully!")
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to initialize research agent: {e}")
+        # Don't raise here to allow API to start and show health status
+        research_agent = None
+    
+    yield
+    
+    # Shutdown
+    logger.info("🔄 Shutting down research agent...")
+
+# Initialize FastAPI app with lifespan
 app = FastAPI(
     title="Zeron Enhanced Research API",
     description="AI-powered research agent with RAG and web search capabilities",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
 # Add CORS middleware
@@ -52,31 +86,6 @@ class HealthResponse(BaseModel):
     timestamp: str
     version: str
     services: Dict[str, str]
-
-# Global research agent instance
-research_agent: Optional[ZeronEnhancedRAG] = None
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize the research agent on startup"""
-    global research_agent
-    try:
-        logger.info("🚀 Initializing Zeron Enhanced Research Agent...")
-        
-        # Validate environment variables
-        required_vars = ["PINECONE_API_KEY", "OPENAI_API_KEY", "GROQ_API_KEY", "ANTHROPIC_API_KEY"]
-        missing_vars = [var for var in required_vars if not os.getenv(var)]
-        
-        if missing_vars:
-            logger.error(f"❌ Missing required environment variables: {missing_vars}")
-            raise Exception(f"Missing environment variables: {missing_vars}")
-        
-        research_agent = ZeronEnhancedRAG()
-        logger.info("✅ Research Agent initialized successfully!")
-        
-    except Exception as e:
-        logger.error(f"❌ Failed to initialize research agent: {e}")
-        raise e
 
 @app.get("/", response_model=Dict[str, str])
 async def root():

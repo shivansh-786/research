@@ -1,4 +1,4 @@
 .env
 result.txt
 __pycache__/
-docs/
+docs
